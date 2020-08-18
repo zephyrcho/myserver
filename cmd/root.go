@@ -16,12 +16,13 @@ limitations under the License.
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
-	"os"
-
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
+	"io/ioutil"
+	"myserver/config"
+	"os"
 )
 
 var cfgFile string
@@ -30,15 +31,10 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "myserver",
 	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Long:  `A longer description `,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Main Run func called")
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -53,39 +49,40 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.myserver.yaml)")
+	rootCmd.PersistentFlags().Int("log-level", 4, "debug=5, info=4, error=2, fatal=1, panic=0")
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.myserver.yaml)")
+	// bind flag to config vars
+	viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(genConfigCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
+		b, err := ioutil.ReadFile(cfgFile)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			fmt.Println("Error loading config file:", cfgFile)
 		}
-
-		// Search config in home directory with name ".myserver" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".myserver")
+		viper.SetConfigType("toml")
+		if err := viper.ReadConfig(bytes.NewBuffer(b)); err != nil {
+			fmt.Println("Error loading config file:", cfgFile)
+		}
+	} else {
+		if err := viper.ReadInConfig(); err != nil {
+			switch err.(type) {
+			case viper.ConfigFileNotFoundError:
+				fmt.Println("No configuration file found")
+			default:
+				fmt.Println("Configuration file error")
+			}
+		}
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	//	viperBindEnvs(config.C)
+	if err := viper.Unmarshal(&config.C); err != nil {
+		fmt.Println("unmarshal config error")
 	}
 }

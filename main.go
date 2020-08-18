@@ -15,8 +15,14 @@ limitations under the License.
 */
 package main
 
-import "githunb.com/zephyrcho/myserver/cmd"
+import (
+	"fmt"
+	"github.com/zephyrcho/myserver/cmd"
+	"myserver/config"
+)
 
 func main() {
 	cmd.Execute()
+
+	fmt.Println(config.C.General.LogLevel)
 }

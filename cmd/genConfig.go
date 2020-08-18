@@ -16,36 +16,36 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"myserver/config"
+	"os"
+	"text/template"
 )
+
+// when updating this template, don't forget to update config.md!
+const configTemplate = `[general]
+# Log level
+#
+# debug=5, info=4, warning=3, error=2, fatal=1, panic=0
+log_level={{ .General.LogLevel }}
+
+# max idle connection
+#
+# default = 2
+
+`
 
 // genConfigCmd represents the genConfig command
 var genConfigCmd = &cobra.Command{
 	Use:   "genConfig",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("genConfig called")
+	Short: "Print configuration file",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		t := template.Must(template.New("config").Parse(configTemplate))
+		err := t.Execute(os.Stdout, config.C)
+		if err != nil {
+			return errors.Wrap(err, "execute config template error")
+		}
+		return nil
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(genConfigCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// genConfigCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// genConfigCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
