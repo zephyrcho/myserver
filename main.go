@@ -24,5 +24,6 @@ import (
 func main() {
 	cmd.Execute()
 
-	fmt.Println(config.C.General.LogLevel)
+	fmt.Println("Log Level :", config.C.General.LogLevel)
+	fmt.Println("Max Connections :", config.C.General.MaxConnections)
 }

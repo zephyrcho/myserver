@@ -55,6 +55,8 @@ func init() {
 	// bind flag to config vars
 	viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
 
+	viper.SetDefault("general.max_connections", 2)
+
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(genConfigCmd)
 }

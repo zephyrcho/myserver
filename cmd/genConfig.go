@@ -33,7 +33,7 @@ log_level={{ .General.LogLevel }}
 # max idle connection
 #
 # default = 2
-
+max_connections=2
 `
 
 // genConfigCmd represents the genConfig command

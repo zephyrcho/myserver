@@ -3,8 +3,8 @@ package config
 // Config defines the configuration structure.
 type Config struct {
 	General struct {
-		LogLevel         int `mapstructure:"log_level"`
-		max_idle_connect int `mapstructure:"max_idle_connect"`
+		LogLevel       int `mapstructure:"log_level"`
+		MaxConnections int `mapstructure:"max_connections"`
 	} `mapstructure:"general"`
 }
 
